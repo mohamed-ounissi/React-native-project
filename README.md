@@ -1,50 +1,58 @@
-# Welcome to your Expo app 👋
+# ExpoStarter
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+ExpoStarter is my first React Native mobile app, built with Expo, TypeScript, and Expo Router.  
+It focuses on clean structure, practical navigation, and core app fundamentals.
 
-## Get started
+## Project Overview
 
-1. Install dependencies
+This project is a dashboard-style app with a modular authentication flow and tab navigation.  
+The current version includes routing and UI foundations, with API-based features planned next.
 
-   ```bash
-   npm install
-   ```
+## Current Features
 
-2. Start the app
+- Auth module with separate `login` and `register` screens
+- Basic form validation for required fields
+- File-based routing with Expo Router
+- Bottom tab navigation with `Home` and `Profile` tabs
+- Disconnect action with confirmation alert and route back to login
+- Styled using React Native `StyleSheet` API
 
-   ```bash
-   npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+- React Native
+- Expo
+- TypeScript
+- Expo Router
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Folder Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- `app/(auth)` - authentication routes (`login`, `register`)
+- `app/(tabs)` - main app tab routes
+- `app/index.tsx` - app entry redirect to login
 
-## Get a fresh project
+## Running the Project
 
-When you're ready, run:
+1. Install dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Start development server:
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. Open on:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Expo Go (Android/iOS)
+- Android emulator
+- iOS simulator
 
-## Join the community
+## Next Steps
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Integrate a real public API for the main list screen
+- Add loading and error states for data fetching
+- Add item detail screen navigation
+- Improve UX and form validation polish
