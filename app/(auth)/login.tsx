@@ -83,7 +83,7 @@ export default function LoginScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/(auth)/register")}
+            onPress={() => router.replace("/(auth)/register")}
             style={styles.switchButton}
           >
             <Text style={styles.switchText}>
