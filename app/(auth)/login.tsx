@@ -11,6 +11,8 @@ import { router } from "expo-router";
 
 import { styles } from "./auth.styles";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { COLORS } from "@/constants/colors";
+import { validateEmail } from "./utils";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -20,6 +22,11 @@ export default function LoginScreen() {
   const handleLogin = () => {
     if (email.trim().length === 0 || password.trim().length === 0) {
       setError("Please fill in both email and password.");
+      return;
+    }
+
+    if (!validateEmail(email.trim())) {
+      setError("Please enter a valid email address.");
       return;
     }
 
@@ -46,6 +53,7 @@ export default function LoginScreen() {
                 if (error) setError("");
               }}
               placeholder="you@example.com"
+              placeholderTextColor={COLORS.placeholder}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -62,6 +70,7 @@ export default function LoginScreen() {
                 if (error) setError("");
               }}
               placeholder="Enter password"
+              placeholderTextColor={COLORS.placeholder}
               secureTextEntry
               style={styles.input}
             />
