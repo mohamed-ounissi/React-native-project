@@ -12,11 +12,13 @@ import {
 import { router } from "expo-router";
 import { TvShowItem } from "@/constants/mockItems";
 import { TvMazeShowResponse } from "@/types/tvmaze";
+import { useLayoutMode } from "@/contexts/layout-mode-context";
 
 const FALLBACK_POSTER = require("@/assets/images/no_pic.jpg");
 const SHOWS_API_URL = "https://api.tvmaze.com/shows";
 
 export default function HomeTabScreen() {
+  const { mode } = useLayoutMode();
   const [items, setItems] = useState<TvShowItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,9 +134,14 @@ export default function HomeTabScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Main List</Text>
       <FlatList
+        key={mode}
         data={items}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        numColumns={mode === "grid" ? 3 : 1}
+        contentContainerStyle={
+          mode === "grid" ? styles.gridContent : styles.listContent
+        }
+        columnWrapperStyle={mode === "grid" ? styles.gridRow : undefined}
         onEndReached={loadNextPage}
         onEndReachedThreshold={0.5}
         refreshControl={
@@ -149,7 +156,7 @@ export default function HomeTabScreen() {
         }
         renderItem={({ item }) => (
           <Pressable
-            style={styles.itemCard}
+            style={mode === "grid" ? styles.gridItem : styles.itemCard}
             onPress={() =>
               router.push({
                 pathname: "/details/[id]",
@@ -159,21 +166,23 @@ export default function HomeTabScreen() {
           >
             <Image
               source={item.imageMedium ? { uri: item.imageMedium } : FALLBACK_POSTER}
-              style={styles.poster}
+              style={mode === "grid" ? styles.gridPoster : styles.poster}
             />
 
-            <View style={styles.itemContent}>
-              <Text style={styles.itemTitle}>{item.name}</Text>
-              <Text style={styles.itemMeta}>
-                {item.type} - {item.status}
-              </Text>
-              <Text style={styles.itemMeta}>
-                {item.language} - Rating {item.ratingAverage ?? "N/A"}
-              </Text>
-              <Text style={styles.itemGenres} numberOfLines={1}>
-                {item.genres.join(" • ")}
-              </Text>
-            </View>
+            {mode === "cards" ? (
+              <View style={styles.itemContent}>
+                <Text style={styles.itemTitle}>{item.name}</Text>
+                <Text style={styles.itemMeta}>
+                  {item.type} - {item.status}
+                </Text>
+                <Text style={styles.itemMeta}>
+                  {item.language} - Rating {item.ratingAverage ?? "N/A"}
+                </Text>
+                <Text style={styles.itemGenres} numberOfLines={1}>
+                  {item.genres.join(" • ")}
+                </Text>
+              </View>
+            ) : null}
           </Pressable>
         )}
       />
@@ -229,6 +238,13 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     gap: 10,
   },
+  gridContent: {
+    paddingBottom: 20,
+    gap: 8,
+  },
+  gridRow: {
+    justifyContent: "space-between",
+  },
   itemCard: {
     flexDirection: "row",
     borderWidth: 1,
@@ -238,9 +254,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
     gap: 12,
   },
+  gridItem: {
+    width: "31%",
+    marginBottom: 8,
+  },
   poster: {
     width: 74,
     height: 108,
+    borderRadius: 8,
+    backgroundColor: "#E4E7EC",
+  },
+  gridPoster: {
+    width: "100%",
+    aspectRatio: 0.68,
     borderRadius: 8,
     backgroundColor: "#E4E7EC",
   },
