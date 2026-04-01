@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { router } from "expo-router";
+import { Link } from "expo-router";
 import { TvMazeShowResponse, TvShowItem } from "@/types/tvmaze";
 import { useLayoutMode } from "@/contexts/layout-mode-context";
 
@@ -183,45 +183,42 @@ export default function HomeTabScreen() {
           ) : null
         }
         renderItem={({ item }) => (
-          <Pressable
-            style={mode === "grid" ? styles.gridItem : styles.itemCard}
-            onPress={() =>
-              router.push({
-                pathname: "/details/[id]",
-                params: { id: item.id },
-              })
-            }
+          <Link
+            href={{ pathname: "/details/[id]", params: { id: item.id } }}
+            asChild
           >
-            {item.imageMedium ? (
-              <Image
-                source={{ uri: item.imageMedium }}
-                style={mode === "grid" ? styles.gridPoster : styles.poster}
-              />
-            ) : (
-              <View style={mode === "grid" ? styles.gridPosterFallback : styles.posterFallback}>
+            <Pressable style={mode === "grid" ? styles.gridItem : styles.itemCard}>
+              {item.imageMedium ? (
                 <Image
-                  source={FALLBACK_POSTER}
-                  style={styles.fallbackImage}
-                  resizeMode="cover"
+                  source={{ uri: item.imageMedium }}
+                  style={mode === "grid" ? styles.gridPoster : styles.poster}
                 />
-              </View>
-            )}
+              ) : (
+                <View style={mode === "grid" ? styles.gridPosterFallback : styles.posterFallback}>
+                  <Image
+                    source={FALLBACK_POSTER}
+                    style={styles.fallbackImage}
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
 
-            {mode === "cards" ? (
-              <View style={styles.itemContent}>
-                <Text style={styles.itemTitle}>{item.name}</Text>
-                <Text style={styles.itemMeta}>
-                  {item.type} - {item.status}
-                </Text>
-                <Text style={styles.itemMeta}>
-                  {item.language} - Rating {item.ratingAverage ?? "N/A"}
-                </Text>
-                <Text style={styles.itemGenres} numberOfLines={1}>
-                  {item.genres.join(" • ")}
-                </Text>
-              </View>
-            ) : null}
-          </Pressable>
+              {mode === "cards" ? (
+                <View style={styles.itemContent}>
+                  <Text style={styles.itemTitle}>{item.name}</Text>
+                  <Text style={styles.itemMeta}>
+                    {item.type} - {item.status}
+                  </Text>
+                  <Text style={styles.itemMeta}>
+                    {item.language} - Rating {item.ratingAverage ?? "N/A"}
+                  </Text>
+                  <Text style={styles.itemGenres} numberOfLines={1}>
+                    {item.genres.join(" • ")}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
+          </Link>
         )}
       />
     </View>
