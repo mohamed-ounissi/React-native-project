@@ -10,8 +10,7 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
-import { TvShowItem } from "@/constants/mockItems";
-import { TvMazeShowResponse } from "@/types/tvmaze";
+import { TvMazeShowResponse, TvShowItem } from "@/types/tvmaze";
 import { useLayoutMode } from "@/contexts/layout-mode-context";
 
 const FALLBACK_POSTER = require("@/assets/images/no_pic.jpg");
