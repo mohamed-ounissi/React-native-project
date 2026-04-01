@@ -11,6 +11,14 @@ import { router } from "expo-router";
 
 import { styles } from "./auth.styles";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { COLORS } from "@/constants/colors";
+import {
+  getRegisteredUser,
+  registerLocalUser,
+  validateEmail,
+  validatePassword,
+} from "./utils";
+import { useRedirectIfAuthenticated } from "@/hooks/use-auth-session";
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState("");
@@ -18,15 +26,32 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleRegister = () => {
+  useRedirectIfAuthenticated();
+
+  const handleRegister = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+
     if (
       fullName.trim().length === 0 ||
-      email.trim().length === 0 ||
+      normalizedEmail.length === 0 ||
       password.trim().length === 0 ||
       confirmPassword.trim().length === 0
     ) {
       setError("Please fill all fields.");
+      return;
+    }
+
+    if (!validateEmail(normalizedEmail)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError(
+        "Password must be at least 8 characters and include letters and numbers."
+      );
       return;
     }
 
@@ -35,8 +60,26 @@ export default function RegisterScreen() {
       return;
     }
 
-    setError("");
-    router.replace("/(tabs)");
+    try {
+      setSubmitting(true);
+      const existingUser = await getRegisteredUser();
+
+      if (existingUser?.email === normalizedEmail) {
+        setError("This email is already registered.");
+        return;
+      }
+
+      await registerLocalUser({
+        fullName: fullName.trim(),
+        email: normalizedEmail,
+        password,
+      });
+
+      setError("");
+      router.replace("/(auth)/login");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -58,6 +101,7 @@ export default function RegisterScreen() {
                 if (error) setError("");
               }}
               placeholder="Your full name"
+              placeholderTextColor={COLORS.placeholder}
               style={styles.input}
             />
           </View>
@@ -71,6 +115,7 @@ export default function RegisterScreen() {
                 if (error) setError("");
               }}
               placeholder="you@example.com"
+              placeholderTextColor={COLORS.placeholder}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -87,6 +132,7 @@ export default function RegisterScreen() {
                 if (error) setError("");
               }}
               placeholder="Enter password"
+              placeholderTextColor={COLORS.placeholder}
               secureTextEntry
               style={styles.input}
             />
@@ -101,6 +147,7 @@ export default function RegisterScreen() {
                 if (error) setError("");
               }}
               placeholder="Re-enter password"
+              placeholderTextColor={COLORS.placeholder}
               secureTextEntry
               style={styles.input}
             />
@@ -108,7 +155,11 @@ export default function RegisterScreen() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <Pressable onPress={handleRegister} style={styles.button}>
+          <Pressable
+            disabled={submitting}
+            onPress={() => void handleRegister()}
+            style={[styles.button, submitting && { opacity: 0.7 }]}
+          >
             <Text style={styles.buttonText}>Register</Text>
           </Pressable>
 

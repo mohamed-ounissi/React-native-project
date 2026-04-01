@@ -1,50 +1,75 @@
-# Welcome to your Expo app 👋
+# ExpoStarter
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+ExpoStarter is my first React Native mobile app, built with Expo, TypeScript, and Expo Router.  
+It focuses on clean structure, practical navigation, and core app fundamentals.
 
-## Get started
+## Project Overview
 
-1. Install dependencies
+This project is a dashboard-style app with a modular authentication flow and tab navigation.  
+The current version includes live TVMaze API integration, loading/error handling, and a detail view flow.
 
-   ```bash
-   npm install
-   ```
+## Current Features
 
-2. Start the app
+- Auth module with separate `login` and `register` screens
+- Form validation for required fields, email format, and password rules
+- File-based routing with Expo Router
+- Bottom tab navigation with `Home` and `Profile` tabs
+- Disconnect action with confirmation alert and route back to login
+- Home screen fetches paginated shows from TVMaze API (`/shows?page=n`)
+- Loading states for initial load, pull-to-refresh, and infinite scroll fetches
+- Error handling with retry actions for list and detail fetch failures
+- Detail screen fetches and displays show information from TVMaze (`/shows/:id`)
+- Toggle between card layout and 3-column poster grid layout
+- Styled using React Native `StyleSheet` API
 
-   ```bash
-   npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+- React Native
+- Expo
+- TypeScript
+- Expo Router
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Folder Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- `app/(auth)` - authentication routes (`login`, `register`)
+- `app/(tabs)` - main app tab routes
+- `app/details/[id].tsx` - show detail route (dynamic id)
+- `app/index.tsx` - app entry route resolver (auth/session-aware redirect)
 
-## Get a fresh project
+## Current App Flow
 
-When you're ready, run:
+- App starts at `/` and `app/index.tsx` resolves the route using `use-auth-session`
+- Unauthenticated startup path: `/` -> `/(auth)/login`
+- Authenticated startup path: `/` -> `/(tabs)` (fast path when local session exists)
+- After login, user enters `/(tabs)` home list
+- Home list loads TV shows from TVMaze with pagination
+- Pull-to-refresh reloads from page 0; reaching the list end loads next page
+- Tapping a show opens `app/details/[id].tsx` and fetches the show details
+- Header actions allow layout toggle (cards/grid) and disconnect
+
+## Running the Project
+
+1. Install dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Start development server:
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. Open on:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Expo Go (Android/iOS)
+- Android emulator
+- iOS simulator
 
-## Join the community
+## Next Steps
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Add filters/search for shows (genre, language, title)
+- Add lightweight caching to reduce repeated network calls
+- Improve profile tab with real user settings/data
+- Add tests for auth validation and API mapping helpers
