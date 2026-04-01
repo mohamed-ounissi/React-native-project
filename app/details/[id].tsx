@@ -10,8 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCallback, useEffect, useState } from "react";
-import { TvShowItem } from "@/constants/mockItems";
-import { TvMazeShowResponse } from "@/types/tvmaze";
+import { TvMazeShowResponse, TvShowItem } from "@/types/tvmaze";
 
 const FALLBACK_POSTER = require("@/assets/images/no_pic.jpg");
 
