@@ -31,9 +31,11 @@ export default function RegisterScreen() {
   useRedirectIfAuthenticated();
 
   const handleRegister = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+
     if (
       fullName.trim().length === 0 ||
-      email.trim().length === 0 ||
+      normalizedEmail.length === 0 ||
       password.trim().length === 0 ||
       confirmPassword.trim().length === 0
     ) {
@@ -41,7 +43,7 @@ export default function RegisterScreen() {
       return;
     }
 
-    if (!validateEmail(email.trim())) {
+    if (!validateEmail(normalizedEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
@@ -62,14 +64,14 @@ export default function RegisterScreen() {
       setSubmitting(true);
       const existingUser = await getRegisteredUser();
 
-      if (existingUser?.email === email.trim()) {
+      if (existingUser?.email === normalizedEmail) {
         setError("This email is already registered.");
         return;
       }
 
       await registerLocalUser({
         fullName: fullName.trim(),
-        email: email.trim(),
+        email: normalizedEmail,
         password,
       });
 

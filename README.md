@@ -34,11 +34,13 @@ The current version includes live TVMaze API integration, loading/error handling
 - `app/(auth)` - authentication routes (`login`, `register`)
 - `app/(tabs)` - main app tab routes
 - `app/details/[id].tsx` - show detail route (dynamic id)
-- `app/index.tsx` - app entry redirect to login
+- `app/index.tsx` - app entry route resolver (auth/session-aware redirect)
 
 ## Current App Flow
 
-- App entry redirects to `/(auth)/login`
+- App starts at `/` and `app/index.tsx` resolves the route using `use-auth-session`
+- Unauthenticated startup path: `/` -> `/(auth)/login`
+- Authenticated startup path: `/` -> `/(tabs)` (fast path when local session exists)
 - After login, user enters `/(tabs)` home list
 - Home list loads TV shows from TVMaze with pagination
 - Pull-to-refresh reloads from page 0; reaching the list end loads next page
