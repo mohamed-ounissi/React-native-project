@@ -7,6 +7,7 @@ It focuses on clean structure, practical navigation, and core app fundamentals.
 
 This project is a dashboard-style app with a modular authentication flow and tab navigation.  
 The current version includes live TVMaze API integration, loading/error handling, and a detail view flow.
+Auth does not use a backend yet; for learning and simplicity, user/session data is stored locally on the device.
 
 ## Current Features
 
