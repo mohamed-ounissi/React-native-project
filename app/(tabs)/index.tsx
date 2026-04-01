@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -26,6 +26,8 @@ export default function HomeTabScreen() {
   const [fetchingMore, setFetchingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const loadingMoreRef = useRef(false);
+  const fetchedPagesRef = useRef<Set<number>>(new Set());
 
   const mapShowToItem = (show: TvMazeShowResponse): TvShowItem => {
     return {
@@ -48,14 +50,22 @@ export default function HomeTabScreen() {
   };
 
   const fetchPage = useCallback(async (targetPage: number, replace = false) => {
+    if (!replace && fetchedPagesRef.current.has(targetPage)) {
+      return;
+    }
+
     if (replace) {
       setRefreshing(true);
       setError(null);
+      fetchedPagesRef.current.clear();
+      loadingMoreRef.current = false;
     } else if (targetPage === 0) {
       setLoading(true);
       setError(null);
+      fetchedPagesRef.current.clear();
     } else {
       setFetchingMore(true);
+      loadingMoreRef.current = true;
     }
 
     try {
@@ -70,6 +80,7 @@ export default function HomeTabScreen() {
 
       setHasMore(mapped.length > 0);
       setPage(targetPage);
+      fetchedPagesRef.current.add(targetPage);
 
       if (replace || targetPage === 0) {
         setItems(mapped);
@@ -86,6 +97,7 @@ export default function HomeTabScreen() {
       setLoading(false);
       setFetchingMore(false);
       setRefreshing(false);
+      loadingMoreRef.current = false;
     }
   }, []);
 
@@ -94,10 +106,11 @@ export default function HomeTabScreen() {
   }, [fetchPage]);
 
   const loadNextPage = () => {
-    if (loading || fetchingMore || refreshing || !hasMore) {
+    if (loading || fetchingMore || refreshing || !hasMore || loadingMoreRef.current) {
       return;
     }
 
+    loadingMoreRef.current = true;
     void fetchPage(page + 1);
   };
 
@@ -136,7 +149,7 @@ export default function HomeTabScreen() {
       <FlatList
         key={mode}
         data={items}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         numColumns={mode === "grid" ? 3 : 1}
         contentContainerStyle={
           mode === "grid" ? styles.gridContent : styles.listContent
@@ -164,10 +177,20 @@ export default function HomeTabScreen() {
               })
             }
           >
-            <Image
-              source={item.imageMedium ? { uri: item.imageMedium } : FALLBACK_POSTER}
-              style={mode === "grid" ? styles.gridPoster : styles.poster}
-            />
+            {item.imageMedium ? (
+              <Image
+                source={{ uri: item.imageMedium }}
+                style={mode === "grid" ? styles.gridPoster : styles.poster}
+              />
+            ) : (
+              <View style={mode === "grid" ? styles.gridPosterFallback : styles.posterFallback}>
+                <Image
+                  source={FALLBACK_POSTER}
+                  style={styles.fallbackImage}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
 
             {mode === "cards" ? (
               <View style={styles.itemContent}>
@@ -269,6 +292,28 @@ const styles = StyleSheet.create({
     aspectRatio: 0.68,
     borderRadius: 8,
     backgroundColor: "#E4E7EC",
+  },
+  posterFallback: {
+    width: 74,
+    height: 108,
+    borderRadius: 8,
+    backgroundColor: "#E4E7EC",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  gridPosterFallback: {
+    width: "100%",
+    aspectRatio: 0.68,
+    borderRadius: 8,
+    backgroundColor: "#E4E7EC",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  fallbackImage: {
+    width: "100%",
+    height: "100%",
   },
   itemContent: {
     flex: 1,
