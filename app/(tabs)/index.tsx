@@ -22,11 +22,12 @@ export default function HomeTabScreen() {
   const [items, setItems] = useState<TvShowItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [fetchingMore, setFetchingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const loadingMoreRef = useRef(false);
+  const isFetchingMoreRef = useRef(false);
   const fetchedPagesRef = useRef<Set<number>>(new Set());
 
   const mapShowToItem = (show: TvMazeShowResponse): TvShowItem => {
@@ -57,15 +58,18 @@ export default function HomeTabScreen() {
     if (replace) {
       setRefreshing(true);
       setError(null);
+      setLoadMoreError(null);
       fetchedPagesRef.current.clear();
-      loadingMoreRef.current = false;
+      isFetchingMoreRef.current = false;
     } else if (targetPage === 0) {
       setLoading(true);
       setError(null);
+      setLoadMoreError(null);
       fetchedPagesRef.current.clear();
     } else {
       setFetchingMore(true);
-      loadingMoreRef.current = true;
+      setLoadMoreError(null);
+      isFetchingMoreRef.current = true;
     }
 
     try {
@@ -89,15 +93,17 @@ export default function HomeTabScreen() {
 
       setItems((prev) => [...prev, ...mapped]);
     } catch {
-      setError("Something went wrong while loading items.");
       if (replace || targetPage === 0) {
+        setError("Something went wrong while loading items.");
         setItems([]);
+      } else {
+        setLoadMoreError("Could not load more shows.");
       }
     } finally {
       setLoading(false);
       setFetchingMore(false);
       setRefreshing(false);
-      loadingMoreRef.current = false;
+      isFetchingMoreRef.current = false;
     }
   }, []);
 
@@ -106,16 +112,16 @@ export default function HomeTabScreen() {
   }, [fetchPage]);
 
   const loadNextPage = () => {
-    if (loading || fetchingMore || refreshing || !hasMore || loadingMoreRef.current) {
+    if (loading || fetchingMore || refreshing || !hasMore || isFetchingMoreRef.current) {
       return;
     }
 
-    loadingMoreRef.current = true;
+    isFetchingMoreRef.current = true;
     void fetchPage(page + 1);
   };
 
   const refreshList = () => {
-    if (loading || refreshing) {
+    if (loading || refreshing || fetchingMore || isFetchingMoreRef.current) {
       return;
     }
 
@@ -132,7 +138,7 @@ export default function HomeTabScreen() {
     );
   }
 
-  if (error) {
+  if (error && items.length === 0) {
     return (
       <View style={styles.centerContent}>
         <Text style={styles.errorText}>{error}</Text>
@@ -164,6 +170,16 @@ export default function HomeTabScreen() {
           fetchingMore ? (
             <View style={styles.footerLoading}>
               <ActivityIndicator size="small" color="#111827" />
+            </View>
+          ) : loadMoreError ? (
+            <View style={styles.footerError}>
+              <Text style={styles.footerErrorText}>{loadMoreError}</Text>
+              <Pressable
+                style={styles.footerRetryButton}
+                onPress={() => void fetchPage(page + 1)}
+              >
+                <Text style={styles.footerRetryText}>Retry</Text>
+              </Pressable>
             </View>
           ) : null
         }
@@ -338,5 +354,25 @@ const styles = StyleSheet.create({
   footerLoading: {
     paddingVertical: 14,
     alignItems: "center",
+  },
+  footerError: {
+    paddingVertical: 12,
+    alignItems: "center",
+    gap: 8,
+  },
+  footerErrorText: {
+    color: "#B42318",
+    fontSize: 13,
+  },
+  footerRetryButton: {
+    backgroundColor: "#111827",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  footerRetryText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 12,
   },
 });

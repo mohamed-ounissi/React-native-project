@@ -3,9 +3,13 @@ import { router, Tabs } from "expo-router";
 import { Alert, Pressable, View, StyleSheet } from "react-native";
 import { useState } from "react";
 import { LayoutMode, LayoutModeContext } from "@/contexts/layout-mode-context";
+import { logoutLocalSession } from "../(auth)/utils";
+import { useRequireAuth } from "@/hooks/use-auth-session";
 
 export default function TabsLayout() {
   const [mode, setMode] = useState<LayoutMode>("cards");
+
+  useRequireAuth();
 
   const handleDisconnect = () => {
     Alert.alert("Disconnect", "Are you sure you want to disconnect?", [
@@ -13,7 +17,14 @@ export default function TabsLayout() {
       {
         text: "Disconnect",
         style: "destructive",
-        onPress: () => router.replace("/(auth)/login"),
+        onPress: () => {
+          const disconnect = async () => {
+            await logoutLocalSession();
+            router.replace("/(auth)/login");
+          };
+
+          void disconnect();
+        },
       },
     ]);
   };

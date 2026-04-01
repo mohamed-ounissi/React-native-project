@@ -12,14 +12,22 @@ import { router } from "expo-router";
 import { styles } from "./auth.styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "@/constants/colors";
-import { validateEmail } from "./utils";
+import {
+  getRegisteredUser,
+  loginLocalSession,
+  validateEmail,
+} from "./utils";
+import { useRedirectIfAuthenticated } from "@/hooks/use-auth-session";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = () => {
+  useRedirectIfAuthenticated();
+
+  const handleLogin = async () => {
     if (email.trim().length === 0 || password.trim().length === 0) {
       setError("Please fill in both email and password.");
       return;
@@ -30,8 +38,26 @@ export default function LoginScreen() {
       return;
     }
 
-    setError("");
-    router.replace("/(tabs)");
+    try {
+      setSubmitting(true);
+      const user = await getRegisteredUser();
+
+      if (!user) {
+        setError("No account found. Please register first.");
+        return;
+      }
+
+      if (user.email !== email.trim() || user.password !== password) {
+        setError("Invalid email or password.");
+        return;
+      }
+
+      setError("");
+      await loginLocalSession();
+      router.replace("/(tabs)");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -78,7 +104,11 @@ export default function LoginScreen() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <Pressable onPress={handleLogin} style={styles.button}>
+          <Pressable
+            disabled={submitting}
+            onPress={() => void handleLogin()}
+            style={[styles.button, submitting && { opacity: 0.7 }]}
+          >
             <Text style={styles.buttonText}>Login</Text>
           </Pressable>
 

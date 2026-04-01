@@ -12,7 +12,13 @@ import { router } from "expo-router";
 import { styles } from "./auth.styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "@/constants/colors";
-import { validateEmail, validatePassword } from "./utils";
+import {
+  getRegisteredUser,
+  registerLocalUser,
+  validateEmail,
+  validatePassword,
+} from "./utils";
+import { useRedirectIfAuthenticated } from "@/hooks/use-auth-session";
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState("");
@@ -20,8 +26,11 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleRegister = () => {
+  useRedirectIfAuthenticated();
+
+  const handleRegister = async () => {
     if (
       fullName.trim().length === 0 ||
       email.trim().length === 0 ||
@@ -49,8 +58,26 @@ export default function RegisterScreen() {
       return;
     }
 
-    setError("");
-    router.replace("/(auth)/login");
+    try {
+      setSubmitting(true);
+      const existingUser = await getRegisteredUser();
+
+      if (existingUser?.email === email.trim()) {
+        setError("This email is already registered.");
+        return;
+      }
+
+      await registerLocalUser({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        password,
+      });
+
+      setError("");
+      router.replace("/(auth)/login");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -126,7 +153,11 @@ export default function RegisterScreen() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <Pressable onPress={handleRegister} style={styles.button}>
+          <Pressable
+            disabled={submitting}
+            onPress={() => void handleRegister()}
+            style={[styles.button, submitting && { opacity: 0.7 }]}
+          >
             <Text style={styles.buttonText}>Register</Text>
           </Pressable>
 
